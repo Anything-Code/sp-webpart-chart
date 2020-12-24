@@ -1,0 +1,82 @@
+import * as React from 'react';
+
+type PaneProviderProps = {
+  children: React.ReactNode
+};
+
+function PaneProvider(props: PaneProviderProps) {
+  const [paneConfig, setPageConfig] = React.useState({
+    pages: [
+      {
+        header: {
+          description: strings.PropertyPaneDescription
+        },
+        groups: [
+          {
+            groupName: strings.SelectListGroupName,
+            groupFields: [
+              PropertyPaneDropdown('selectedList', {
+                label: strings.SelectListFieldLabel,
+                options: this.lists,
+                disabled: this.listsDropdownDisabled
+              }),
+            ]
+          },
+          {
+            groupName: strings.SelectDimensionsGroupName,
+            groupFields: [
+              PropertyPaneDropdown('x', {
+                label: strings.SelectXFieldLabel,
+                options: this.xDimensionItems,
+                disabled: this.xDimensionItemsDisabled
+              }),
+              PropertyPaneDropdown('y', {
+                label: strings.SelectYFieldLabel,
+                options: this.yDimensionItems,
+                disabled: this.yDimensionItemsDisabled
+              }),
+            ]
+          }
+        ]
+      }
+    ]
+  });
+  
+  React.useEffect(() => {
+
+  }, [paneConfig]);
+
+  return <PaneContext.Provider value={paneConfig}>{props.children}</PaneContext.Provider>
+}
+
+interface PaneContextApi {
+
+}
+
+const PaneContext = React.createContext<PaneContextApi>({});
+
+
+function Widget() {
+  return <React.Fragment>
+    <PaneProvider header={strings.PropertyPaneDescription} context={this.contenx}>
+    <PaneGroup name="">
+      <PaneDropdown/>
+    </PaneGroup>
+    <PaneGroup name="">
+      <PaneDropdown elements={list}/>
+      <PaneDropdown/>
+    </PaneGroup>
+  </PaneProvider>
+  </React.Fragment>;
+}
+
+function webPartRenderer(domElement: Element, context: whatextContext) {
+    ReactDOM.render(<Widget context={context} />, domElement);
+}
+
+function PaneDropdown() {
+
+  return null;
+}
+
+

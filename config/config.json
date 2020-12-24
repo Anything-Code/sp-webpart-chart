@@ -1,0 +1,23 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "charts-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/charts/ChartsWebPart.js",
+          "manifest": "./src/webparts/charts/ChartsWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {
+    // "mystock": {
+    //   "path": "https://snpcom.sharepoint.com/Style%20Library/snp_styles/modern/stock/stock.js",
+    //   "globalName": "Mystock"
+    // }
+  },
+  "localizedResources": {
+    "ChartsWebPartStrings": "lib/webparts/charts/loc/{locale}.js"
+  }
+}
