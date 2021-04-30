@@ -9,6 +9,6 @@ define([], function() {
     SelectYFieldLabel: 'Y',
     SelectGroupByFieldLabel: 'Group by',
     ConfigFieldLabel: 'Config',
-    OptionsGroupName: 'Options (optional)'
+    OptionsGroupName: 'Misc (optional)'
   }
 });

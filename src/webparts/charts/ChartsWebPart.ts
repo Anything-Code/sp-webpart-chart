@@ -19,7 +19,7 @@ import 'c3/c3.min.css';
 import { Web } from '@pnp/sp/presets/all';
 
 // const web = Web('https://snpcom.sharepoint.com/');
-const web = Web('https://snpcom.sharepoint.com/GlobalFunctions/hr/');
+// const web = Web('https://snpcom.sharepoint.com/GlobalFunctions/hr/');
 
 export type IChartsWebPartProps = {
   selectedList: string;
@@ -35,6 +35,7 @@ export default class ChartsWebPart extends BaseClientSideWebPart<IChartsWebPartP
   private availableFields: IPropertyPaneDropdownOption[];
   private listsDropdownDisabled: boolean = true;
   private fieldSelectsDisabled: boolean = true;
+  private web = Web('https://snpcom.sharepoint.com/');
 
   public render(): void {
     // mystock.d3(d3);
@@ -44,7 +45,7 @@ export default class ChartsWebPart extends BaseClientSideWebPart<IChartsWebPartP
 
   private loadLists(): Promise<IPropertyPaneDropdownOption[]> {
     return new Promise<IPropertyPaneDropdownOption[]>((resolve: (options: IPropertyPaneDropdownOption[]) => void, reject: (error: any) => void) => {
-      web.lists.get().then((response) => {
+      this.web.lists.get().then((response) => {
         resolve(response.map((list) => ({key: list.Id, text: list.Title})));
       }).catch((error) => reject(error));
     });
@@ -56,7 +57,7 @@ export default class ChartsWebPart extends BaseClientSideWebPart<IChartsWebPartP
     }
 
     return new Promise<IPropertyPaneDropdownOption[]>((resolve: (options: IPropertyPaneDropdownOption[]) => void, reject: (error: any) => void) => {
-      web.lists.getById(this.properties.selectedList).fields()
+      this.web.lists.getById(this.properties.selectedList).fields()
         .then((fields) => {
           resolve(fields.map((field) => ({key: `${this.properties.selectedList}-${field.Id}`, text: field.Title})));
         })
@@ -66,7 +67,7 @@ export default class ChartsWebPart extends BaseClientSideWebPart<IChartsWebPartP
 
   protected onPropertyPaneConfigurationStart(): void {
     this.listsDropdownDisabled = !this.lists;
-
+  
     if (this.lists) {
       return;
     }
@@ -101,19 +102,41 @@ export default class ChartsWebPart extends BaseClientSideWebPart<IChartsWebPartP
 
       this.loadFields()
         .then((fieldOptions: IPropertyPaneDropdownOption[]): void => {
+          this.properties.x = '';
+          this.properties.y = '';
+          this.properties.groupBy = '';
           this.availableFields = fieldOptions;
           
           this.fieldSelectsDisabled = false;
           
           this.context.statusRenderer.clearLoadingIndicator(this.domElement);
-          
-          // this.render();
 
           this.context.propertyPane.refresh();
+
+          this.render();
         });
+    } else if (propertyPath === 'subWeb') {
+      super.onPropertyPaneFieldChanged(propertyPath, oldValue, newValue);
+
+      this.web = Web(`https://snpcom.sharepoint.com/${newValue}/`);
+      this.loadLists()
+      .then((listOptions: IPropertyPaneDropdownOption[]): void => {
+        this.lists = listOptions;
+        this.listsDropdownDisabled = false;
+        this.context.propertyPane.refresh();
+      }).catch((error) => {
+        this.lists = [];
+        this.availableFields = [];
+        this.listsDropdownDisabled = true;
+        this.fieldSelectsDisabled = true;
+        this.context.propertyPane.refresh();
+        this.context.statusRenderer.clearLoadingIndicator(this.domElement);
+      });
     }
     else {
       super.onPropertyPaneFieldChanged(propertyPath, oldValue, newValue);
+
+      this.render();
     }
   }
 
@@ -159,7 +182,7 @@ export default class ChartsWebPart extends BaseClientSideWebPart<IChartsWebPartP
                 PropertyPaneDropdown('groupBy', {
                   label: strings.SelectGroupByFieldLabel,
                   options: this.availableFields,
-                  disabled: this.fieldSelectsDisabled
+                  disabled: this.fieldSelectsDisabled || this.properties.x === '' || this.properties.y === ''
                 }),
               ]
             },
